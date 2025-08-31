@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Detections</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="container">
+    <h1>Detections</h1>
+
+    {% if error %}
+      <div class="alert">{{ error }}</div>
+    {% endif %}
+
+    {% if b64_image %}
+      <img class="result" src="data:image/jpeg;base64,{{ b64_image }}" alt="Detections"/>
+    {% endif %}
+
+    <section class="mt">
+      <h2>Summary</h2>
+      {% if summary and summary|length > 0 %}
+        <ul>
+          {% for line in summary %}
+            <li>{{ line }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="muted">No objects detected.</p>
+      {% endif %}
+    </section>
+
+    <div class="row mt">
+      <a class="btn" href="/">Try another image</a>
+    </div>
+  </main>
+</body>
+</html>

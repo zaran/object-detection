@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Object Detection (CPU)</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="container">
+    <h1>Object Detection</h1>
+    <p>Upload an image and get it back with boxes drawn using a lightweight YOLOv8n model (CPU only).</p>
+
+    <form method="POST" action="/detect" enctype="multipart/form-data" class="card">
+      <label for="image" class="label">Choose image (JPG/PNG)</label>
+      <input id="image" name="image" type="file" accept="image/*" required />
+
+      <label for="conf" class="label mt">Confidence (0.10–0.90): <span id="conf-val">0.25</span></label>
+      <input type="range" id="conf" name="conf" min="0.10" max="0.90" step="0.05" value="0.25"/>
+
+      <button class="btn mt" type="submit">Detect Objects</button>
+    </form>
+
+    <img id="preview" class="preview mt" style="display:none;" alt="preview"/>
+  </main>
+
+  <script>
+    const input = document.getElementById('image');
+    const preview = document.getElementById('preview');
+    const conf = document.getElementById('conf');
+    const confVal = document.getElementById('conf-val');
+    input.addEventListener('change', (e) => {
+      const f = e.target.files?.[0];
+      if (!f) { preview.style.display = 'none'; return; }
+      const url = URL.createObjectURL(f);
+      preview.src = url; preview.style.display = 'block';
+    });
+    conf.addEventListener('input', () => confVal.textContent = Number(conf.value).toFixed(2));
+  </script>
+</body>
+</html>
