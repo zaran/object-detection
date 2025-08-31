@@ -4,26 +4,28 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1
 
-# Torch needs OpenMP runtime on Debian slim
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libgomp1 \
- && rm -rf /var/lib/apt/lists/*
+# System dependencies (OpenMP for torch, and cleanup)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends libgomp1 && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# Set working directory
 WORKDIR /app
 
-# Install CPU-only PyTorch first (stable + small)
-RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu \
-    torch torchvision torchaudio
-
-# Then the rest
+# Pre-copy requirements to leverage Docker layer caching
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy source
+# Upgrade pip and install CPU-only torch + other deps
+RUN python -m pip install --upgrade pip && \
+    pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu \
+    torch torchvision torchaudio && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Copy rest of the source code
 COPY . .
 
-# Pre-download weights so first request is fast
-RUN python - <<'PY'\nfrom ultralytics import YOLO\nYOLO('yolov8n.pt')\nPY
-
+# Expose port for app
 EXPOSE 8000
+
+# Start the app using gunicorn
 CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:8000", "app:app"]
